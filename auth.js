@@ -30,6 +30,7 @@ export function showLogin(root, showHome, showRegister) {
         const password = document.getElementById('loginPassword').value;
         const user = JSON.parse(localStorage.getItem(username));
         if (user && user.password === password) {
+            localStorage.setItem('connectedUser', username);
             alert('Connexion réussie !');
             showHome();
         } else {
@@ -53,7 +54,8 @@ export function showRegister(root, showHome, showLogin) {
         } else {
             localStorage.setItem(username, JSON.stringify({ username, password }));
             alert('Inscription réussie !');
-            showLogin();
+            localStorage.setItem('connectedUser', username);
+            showHome();
         }
     };
     document.getElementById('showLogin').onclick = function(e) {
@@ -61,4 +63,8 @@ export function showRegister(root, showHome, showLogin) {
         showLogin();
     };
     document.getElementById('backHomeBtn').onclick = showHome;
+}
+export function logout(showHome) {
+    localStorage.removeItem('connectedUser');
+    showHome();
 }

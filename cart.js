@@ -1,12 +1,21 @@
 import { products } from './products.js';
 
 export function getCart() {
-    return JSON.parse(localStorage.getItem('cart')) || [];
+    const user = localStorage.getItem('connectedUser');
+    if (!user) return [];
+    return JSON.parse(localStorage.getItem(`cart_${user}`)) || [];
 }
 export function setCart(cart) {
-    localStorage.setItem('cart', JSON.stringify(cart));
+    const user = localStorage.getItem('connectedUser');
+    if (!user) return;
+    localStorage.setItem(`cart_${user}`, JSON.stringify(cart));
 }
 export function addToCart(productId) {
+    const user = localStorage.getItem('connectedUser');
+    if (!user) {
+        alert("Vous devez être connecté pour ajouter au panier.");
+        return;
+    }
     let cart = getCart();
     const product = products.find(p => p.id === productId);
     const item = cart.find(i => i.id === productId);
@@ -18,9 +27,20 @@ export function addToCart(productId) {
     setCart(cart);
 }
 export function showCart(root, showHome) {
+    const connectedUser = localStorage.getItem('connectedUser');
+    if (!connectedUser) {
+        root.innerHTML = `
+            <h2>Vous devez être connecté pour accéder au panier.</h2>
+            <button id="backHomeBtn">Retour à l'accueil</button>
+        `;
+        document.getElementById('backHomeBtn').onclick = function() {
+            showHome();
+        };
+        return;
+    }
     const cart = getCart();
     let total = 0;
-    let promoCode = localStorage.getItem('promoCode') || '';
+    let promoCode = localStorage.getItem(`promoCode_${connectedUser}`) || '';
     let promoInput = promoCode ? `value="${promoCode}"` : '';
     let promoMessage = '';
     let discount = 0;
@@ -55,7 +75,7 @@ export function showCart(root, showHome) {
     });
     html += `</table>`;
 
-    // Gestion des réductions
+    // Réductions
     if (total > 100) {
         discount += total * 0.10;
         promoMessage += `<p>10% de réduction appliquée (-${(total * 0.10).toFixed(2)} €)</p>`;
@@ -64,7 +84,7 @@ export function showCart(root, showHome) {
         discount += 10;
         promoMessage += `<p>Code promo ESGI10 appliqué (-10.00 €)</p>`;
     }
-    if (discount > total) discount = total; // Pas de total négatif
+    if (discount > total) discount = total;
 
     html += `
         <form id="promoForm" style="margin:1em 0;">
@@ -104,20 +124,20 @@ export function showCart(root, showHome) {
         e.preventDefault();
         const code = document.getElementById('promoInput').value.trim();
         if (code === 'ESGI10') {
-            localStorage.setItem('promoCode', code);
+            localStorage.setItem(`promoCode_${connectedUser}`, code);
             showCart(root, showHome);
         } else if (code.length > 0) {
             alert('Code promo invalide');
         }
     };
     document.getElementById('removePromoBtn').onclick = function() {
-        localStorage.removeItem('promoCode');
+        localStorage.removeItem(`promoCode_${connectedUser}`);
         showCart(root, showHome);
     };
 
     document.getElementById('validateCartBtn').onclick = function() {
         setCart([]);
-        localStorage.removeItem('promoCode');
+        localStorage.removeItem(`promoCode_${connectedUser}`);
         alert('Commande validée ! Merci pour votre achat.');
         showHome();
     };
