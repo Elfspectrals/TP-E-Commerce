@@ -1,18 +1,19 @@
 class Product {
-    constructor(id, name, description, price, stock) {
+    constructor(id, name, description, price, stock, image) {
         this.id = id;
         this.name = name;
         this.description = description;
         this.price = price;
-        this.stock = stock; 
+        this.stock = stock;
+        this.image = image; // Ajout de l'image
     }
 }
 
 export const products = [
-    new Product(1, "Produit 1", "Description 1", 10.99, 50),
-    new Product(2, "Produit 2", "Description 2", 19.99, 30),
-    new Product(3, "Produit 3", "Description 3", 5.99, 100),
-    new Product(4, "Produit 4", "Description 4", 100, 10),
+    new Product(1, "Produit 1", "Description 1", 10.99, 50, "https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcSSX0KKBu56BQPLHrKcVbgFhfA5TvXEDJ1NBbkdLuv2gEgq3lBG22YT3X3h6m_Lh4v7iDTMULR2RU7pjB0PTuvLl0ATAIStACePy3aEpak"),
+    new Product(2, "Produit 2", "Description 2", 19.99, 30, "https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcSSX0KKBu56BQPLHrKcVbgFhfA5TvXEDJ1NBbkdLuv2gEgq3lBG22YT3X3h6m_Lh4v7iDTMULR2RU7pjB0PTuvLl0ATAIStACePy3aEpak"),
+    new Product(3, "Produit 3", "Description 3", 5.99, 100, "https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcSSX0KKBu56BQPLHrKcVbgFhfA5TvXEDJ1NBbkdLuv2gEgq3lBG22YT3X3h6m_Lh4v7iDTMULR2RU7pjB0PTuvLl0ATAIStACePy3aEpak"),
+    new Product(4, "Produit 4", "Description 4", 100, 10, "https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcSSX0KKBu56BQPLHrKcVbgFhfA5TvXEDJ1NBbkdLuv2gEgq3lBG22YT3X3h6m_Lh4v7iDTMULR2RU7pjB0PTuvLl0ATAIStACePy3aEpak"),
 ];
 
 // Charger les stocks sauvegardés
@@ -52,10 +53,10 @@ export function toggleFavorite(productId) {
         alert("Vous devez être connecté pour gérer les favoris.");
         return;
     }
-    
+
     let favorites = getFavorites();
     const index = favorites.indexOf(productId);
-    
+
     if (index > -1) {
         favorites.splice(index, 1);
         alert('Produit retiré des favoris !');
@@ -63,7 +64,7 @@ export function toggleFavorite(productId) {
         favorites.push(productId);
         alert('Produit ajouté aux favoris !');
     }
-    
+
     localStorage.setItem(`favorites_${user}`, JSON.stringify(favorites));
     displayProductList(products);
 }
@@ -72,13 +73,14 @@ export function displayProductList(products) {
     const productList = document.getElementById('product-list');
     const favorites = getFavorites();
     const user = localStorage.getItem('connectedUser');
-    
+
     productList.innerHTML = '';
     products.forEach(product => {
         const isFavorite = favorites.includes(product.id);
         const div = document.createElement('div');
         div.className = 'product-item';
         div.innerHTML = `
+            <img src="${product.image}" alt="${product.name}" style="width:100%;height:auto;border-radius:8px;margin-bottom:10px;">
             <h2>${product.name}</h2>
             <p>${product.description}</p>
             <p>Prix : ${product.price.toFixed(2)} €</p>

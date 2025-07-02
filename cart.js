@@ -4,12 +4,12 @@ class Cart {
     constructor(userId) {
         this.userId = userId;
     }
-    
+
     getItems() {
         if (!this.userId) return [];
         return JSON.parse(localStorage.getItem(`cart_${this.userId}`)) || [];
     }
-    
+
     saveItems(items) {
         if (!this.userId) return;
         localStorage.setItem(`cart_${this.userId}`, JSON.stringify(items));
@@ -36,18 +36,18 @@ export function addToCart(productId, quantity = 1) {
         alert("Vous devez être connecté pour ajouter au panier.");
         return;
     }
-    
+
     let cart = getCart();
     const product = products.find(p => p.id === productId);
     const item = cart.find(i => i.id === productId);
-    
+
     // Vérification stock
     const totalQuantity = item ? item.quantity + quantity : quantity;
     if (totalQuantity > product.stock) {
         alert(`Stock insuffisant ! Maximum: ${product.stock}`);
         return;
     }
-    
+
     if (item) {
         item.quantity += quantity;
     } else {
@@ -63,7 +63,7 @@ export function showCart(root, showHome) {
             <h2>Vous devez être connecté pour accéder au panier.</h2>
             <button id="backHomeBtn">Retour à l'accueil</button>
         `;
-        document.getElementById('backHomeBtn').onclick = function() {
+        document.getElementById('backHomeBtn').onclick = function () {
             showHome();
         };
         return;
@@ -83,6 +83,7 @@ export function showCart(root, showHome) {
                 <th>Prix</th>
                 <th>Quantité</th>
                 <th>Sous-total</th>
+                <th>Image</th>
                 <th>Actions</th>
             </tr>
     `;
@@ -97,6 +98,7 @@ export function showCart(root, showHome) {
                     <input type="number" min="1" value="${item.quantity}" data-idx="${idx}" class="cart-qty">
                 </td>
                 <td>${subTotal.toFixed(2)} €</td>
+                <td><img src="${item.image}" alt="${item.name}" style="width:100px;height:auto;"></td>
                 <td>
                     <button class="remove-cart-item" data-idx="${idx}">Supprimer</button>
                 </td>
@@ -130,7 +132,7 @@ export function showCart(root, showHome) {
     root.innerHTML = html;
 
     document.querySelectorAll('.remove-cart-item').forEach(btn => {
-        btn.onclick = function() {
+        btn.onclick = function () {
             const idx = parseInt(this.dataset.idx);
             cart.splice(idx, 1);
             setCart(cart);
@@ -139,12 +141,12 @@ export function showCart(root, showHome) {
     });
 
     document.querySelectorAll('.cart-qty').forEach(input => {
-        input.onchange = function() {
+        input.onchange = function () {
             const idx = parseInt(this.dataset.idx);
             const qty = parseInt(this.value);
             const item = cart[idx];
             const product = products.find(p => p.id === item.id);
-            
+
             if (qty > 0 && qty <= product.stock) {
                 cart[idx].quantity = qty;
                 setCart(cart);
@@ -156,7 +158,7 @@ export function showCart(root, showHome) {
         };
     });
 
-    document.getElementById('promoForm').onsubmit = function(e) {
+    document.getElementById('promoForm').onsubmit = function (e) {
         e.preventDefault();
         const code = document.getElementById('promoInput').value.trim();
         if (code === 'ESGI10') {
@@ -166,12 +168,12 @@ export function showCart(root, showHome) {
             alert('Code promo invalide');
         }
     };
-    document.getElementById('removePromoBtn').onclick = function() {
+    document.getElementById('removePromoBtn').onclick = function () {
         localStorage.removeItem(`promoCode_${connectedUser}`);
         showCart(root, showHome);
     };
 
-    document.getElementById('validateCartBtn').onclick = function() {
+    document.getElementById('validateCartBtn').onclick = function () {
         // Mise à jour des stocks
         cart.forEach(item => {
             const productIndex = products.findIndex(p => p.id === item.id);
@@ -179,17 +181,17 @@ export function showCart(root, showHome) {
                 products[productIndex].stock -= item.quantity;
             }
         });
-        
+
         // Sauvegarder les nouveaux stocks
         saveStocks();
-        
+
         setCart([]);
         localStorage.removeItem(`promoCode_${connectedUser}`);
         alert('Commande validée ! Merci pour votre achat.');
         showHome();
     };
 
-    document.getElementById('backHomeBtn').onclick = function() {
+    document.getElementById('backHomeBtn').onclick = function () {
         showHome();
     };
 }
