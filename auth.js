@@ -1,10 +1,11 @@
 class User {
-    constructor(firstName, lastName, email, username, password) {
+    constructor(firstName, lastName, email, username, password, side) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
         this.username = username;
         this.password = password;
+        this.side = side;
     }
 }
 
@@ -40,6 +41,16 @@ export function renderRegisterForm() {
             <input id="registerUsername" placeholder="Nom d'utilisateur" required>
             <input id="registerPassword" type="password" placeholder="Mot de passe" required>
             <input id="registerConfirmPassword" type="password" placeholder="Confirmer le mot de passe" required>
+            <div class="side-choice">
+                <label class="side-radio" for="side-jedi">
+                    <input type="radio" id="side-jedi" name="side" value="jedi" required checked>
+                    Jedi
+                </label>
+                <label class="side-radio" for="side-sith">
+                    <input type="radio" id="side-sith" name="side" value="sith" required>
+                    Sith
+                </label>
+            </div>
             <button type="submit">S'inscrire</button>
         </form>
         <p>Déjà un compte ? <a href="#" id="showLogin">Se connecter</a></p>
@@ -58,6 +69,9 @@ export function showLogin(root, showHome, showRegister) {
             const hashed = await hashPassword(password);
             if (user.password === hashed) {
                 localStorage.setItem('connectedUser', username);
+                // Ajout du style selon le côté
+                document.body.classList.remove('jedi', 'sith');
+                document.body.classList.add(user.side || 'jedi');
                 alert('Connexion réussie !');
                 showHome();
                 return;
@@ -82,6 +96,7 @@ export function showRegister(root, showHome, showLogin) {
         const username = document.getElementById('registerUsername').value;
         const password = document.getElementById('registerPassword').value;
         const confirmPassword = document.getElementById('registerConfirmPassword').value;
+        const side = document.querySelector('input[name="side"]:checked').value;
 
         if (password !== confirmPassword) {
             alert('Les mots de passe ne correspondent pas !');
@@ -92,7 +107,7 @@ export function showRegister(root, showHome, showLogin) {
             alert('Utilisateur déjà existant !');
         } else {
             const hashed = await hashPassword(password);
-            const user = new User(firstName, lastName, email, username, hashed);
+            const user = new User(firstName, lastName, email, username, hashed, side);
             localStorage.setItem(username, JSON.stringify(user));
             alert('Inscription réussie !');
             localStorage.setItem('connectedUser', username);
@@ -106,7 +121,9 @@ export function showRegister(root, showHome, showLogin) {
     document.getElementById('backHomeBtn').onclick = showHome;
 }
 
+// Lors du logout, retirer la classe de style
 export function logout(showHome) {
     localStorage.removeItem('connectedUser');
+    document.body.classList.remove('jedi', 'sith');
     showHome();
 }
