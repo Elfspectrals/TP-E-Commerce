@@ -1,3 +1,12 @@
+async function hashPassword(password) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(password);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    return Array.from(new Uint8Array(hashBuffer))
+        .map(b => b.toString(16).padStart(2, '0'))
+        .join('');
+}
+
 export function renderLoginForm() {
     return `
         <h2>Connexion</h2>
@@ -24,20 +33,23 @@ export function renderRegisterForm() {
 }
 export function showLogin(root, showHome, showRegister) {
     root.innerHTML = renderLoginForm();
-    document.getElementById('loginForm').onsubmit = function(e) {
+    document.getElementById('loginForm').onsubmit = async function (e) {
         e.preventDefault();
         const username = document.getElementById('loginUsername').value;
         const password = document.getElementById('loginPassword').value;
         const user = JSON.parse(localStorage.getItem(username));
-        if (user && user.password === password) {
-            localStorage.setItem('connectedUser', username);
-            alert('Connexion réussie !');
-            showHome();
-        } else {
-            alert('Identifiants invalides !');
+        if (user) {
+            const hashed = await hashPassword(password);
+            if (user.password === hashed) {
+                localStorage.setItem('connectedUser', username);
+                alert('Connexion réussie !');
+                showHome();
+                return;
+            }
         }
+        alert('Identifiants invalides !');
     };
-    document.getElementById('showRegister').onclick = function(e) {
+    document.getElementById('showRegister').onclick = function (e) {
         e.preventDefault();
         showRegister();
     };
@@ -45,20 +57,21 @@ export function showLogin(root, showHome, showRegister) {
 }
 export function showRegister(root, showHome, showLogin) {
     root.innerHTML = renderRegisterForm();
-    document.getElementById('registerForm').onsubmit = function(e) {
+    document.getElementById('registerForm').onsubmit = async function (e) {
         e.preventDefault();
         const username = document.getElementById('registerUsername').value;
         const password = document.getElementById('registerPassword').value;
         if (localStorage.getItem(username)) {
             alert('Utilisateur déjà existant !');
         } else {
-            localStorage.setItem(username, JSON.stringify({ username, password }));
+            const hashed = await hashPassword(password);
+            localStorage.setItem(username, JSON.stringify({ username, password: hashed }));
             alert('Inscription réussie !');
             localStorage.setItem('connectedUser', username);
             showHome();
         }
     };
-    document.getElementById('showLogin').onclick = function(e) {
+    document.getElementById('showLogin').onclick = function (e) {
         e.preventDefault();
         showLogin();
     };
