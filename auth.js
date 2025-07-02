@@ -1,3 +1,22 @@
+class User {
+    constructor(firstName, lastName, email, username, password) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = email;
+        this.username = username;
+        this.password = password;
+    }
+}
+
+async function hashPassword(password) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(password);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    return Array.from(new Uint8Array(hashBuffer))
+        .map(b => b.toString(16).padStart(2, '0'))
+        .join('');
+}
+
 export function renderLoginForm() {
     return `
         <h2>Connexion</h2>
@@ -10,60 +29,83 @@ export function renderLoginForm() {
         <button id="backHomeBtn">Retour à l'accueil</button>
     `;
 }
+
 export function renderRegisterForm() {
     return `
         <h2>Inscription</h2>
         <form id="registerForm">
+            <input id="registerFirstName" placeholder="Prénom" required>
+            <input id="registerLastName" placeholder="Nom" required>
+            <input id="registerEmail" type="email" placeholder="Email" required>
             <input id="registerUsername" placeholder="Nom d'utilisateur" required>
             <input id="registerPassword" type="password" placeholder="Mot de passe" required>
+            <input id="registerConfirmPassword" type="password" placeholder="Confirmer le mot de passe" required>
             <button type="submit">S'inscrire</button>
         </form>
         <p>Déjà un compte ? <a href="#" id="showLogin">Se connecter</a></p>
         <button id="backHomeBtn">Retour à l'accueil</button>
     `;
 }
+
 export function showLogin(root, showHome, showRegister) {
     root.innerHTML = renderLoginForm();
-    document.getElementById('loginForm').onsubmit = function(e) {
+    document.getElementById('loginForm').onsubmit = async function (e) {
         e.preventDefault();
         const username = document.getElementById('loginUsername').value;
         const password = document.getElementById('loginPassword').value;
         const user = JSON.parse(localStorage.getItem(username));
-        if (user && user.password === password) {
-            localStorage.setItem('connectedUser', username);
-            alert('Connexion réussie !');
-            showHome();
-        } else {
-            alert('Identifiants invalides !');
+        if (user) {
+            const hashed = await hashPassword(password);
+            if (user.password === hashed) {
+                localStorage.setItem('connectedUser', username);
+                alert('Connexion réussie !');
+                showHome();
+                return;
+            }
         }
+        alert('Identifiants invalides !');
     };
-    document.getElementById('showRegister').onclick = function(e) {
+    document.getElementById('showRegister').onclick = function (e) {
         e.preventDefault();
         showRegister();
     };
     document.getElementById('backHomeBtn').onclick = showHome;
 }
+
 export function showRegister(root, showHome, showLogin) {
     root.innerHTML = renderRegisterForm();
-    document.getElementById('registerForm').onsubmit = function(e) {
+    document.getElementById('registerForm').onsubmit = async function (e) {
         e.preventDefault();
+        const firstName = document.getElementById('registerFirstName').value;
+        const lastName = document.getElementById('registerLastName').value;
+        const email = document.getElementById('registerEmail').value;
         const username = document.getElementById('registerUsername').value;
         const password = document.getElementById('registerPassword').value;
+        const confirmPassword = document.getElementById('registerConfirmPassword').value;
+        
+        if (password !== confirmPassword) {
+            alert('Les mots de passe ne correspondent pas !');
+            return;
+        }
+        
         if (localStorage.getItem(username)) {
             alert('Utilisateur déjà existant !');
         } else {
-            localStorage.setItem(username, JSON.stringify({ username, password }));
+            const hashed = await hashPassword(password);
+            const user = new User(firstName, lastName, email, username, hashed);
+            localStorage.setItem(username, JSON.stringify(user));
             alert('Inscription réussie !');
             localStorage.setItem('connectedUser', username);
             showHome();
         }
     };
-    document.getElementById('showLogin').onclick = function(e) {
+    document.getElementById('showLogin').onclick = function (e) {
         e.preventDefault();
         showLogin();
     };
     document.getElementById('backHomeBtn').onclick = showHome;
 }
+
 export function logout(showHome) {
     localStorage.removeItem('connectedUser');
     showHome();

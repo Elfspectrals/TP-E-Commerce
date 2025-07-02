@@ -1,4 +1,4 @@
-import { products, displayProductList } from './products.js';
+import { products, displayProductList, toggleFavorite } from './products.js';
 import { addToCart, showCart } from './cart.js';
 import { showLogin, showRegister, logout } from './auth.js';
 
@@ -31,11 +31,18 @@ function showHome() {
 document.body.addEventListener('click', function(e) {
     if (e.target.classList.contains('add-to-cart')) {
         const id = parseInt(e.target.dataset.id);
-        addToCart(id);
-        // Message d'ajout seulement si connecté
+        const quantityInput = document.querySelector(`.quantity-input[data-id="${id}"]`);
+        const quantity = quantityInput ? parseInt(quantityInput.value) : 1;
+        
+        addToCart(id, quantity);
         if (localStorage.getItem('connectedUser')) {
             alert('Produit ajouté au panier !');
         }
+    }
+    
+    if (e.target.classList.contains('toggle-favorite')) {
+        const id = parseInt(e.target.dataset.id);
+        toggleFavorite(id);
     }
 });
 

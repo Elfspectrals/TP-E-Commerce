@@ -1,31 +1,61 @@
-import { products } from './products.js';
+import { products, saveStocks } from './products.js';
+
+class Cart {
+    constructor(userId) {
+        this.userId = userId;
+    }
+    
+    getItems() {
+        if (!this.userId) return [];
+        return JSON.parse(localStorage.getItem(`cart_${this.userId}`)) || [];
+    }
+    
+    saveItems(items) {
+        if (!this.userId) return;
+        localStorage.setItem(`cart_${this.userId}`, JSON.stringify(items));
+    }
+}
 
 export function getCart() {
     const user = localStorage.getItem('connectedUser');
     if (!user) return [];
-    return JSON.parse(localStorage.getItem(`cart_${user}`)) || [];
+    const cart = new Cart(user);
+    return cart.getItems();
 }
-export function setCart(cart) {
+
+export function setCart(cartItems) {
     const user = localStorage.getItem('connectedUser');
     if (!user) return;
-    localStorage.setItem(`cart_${user}`, JSON.stringify(cart));
+    const cart = new Cart(user);
+    cart.saveItems(cartItems);
 }
-export function addToCart(productId) {
+
+export function addToCart(productId, quantity = 1) {
     const user = localStorage.getItem('connectedUser');
     if (!user) {
         alert("Vous devez être connecté pour ajouter au panier.");
         return;
     }
+    
     let cart = getCart();
     const product = products.find(p => p.id === productId);
     const item = cart.find(i => i.id === productId);
+    
+    // Vérification stock
+    const totalQuantity = item ? item.quantity + quantity : quantity;
+    if (totalQuantity > product.stock) {
+        alert(`Stock insuffisant ! Maximum: ${product.stock}`);
+        return;
+    }
+    
     if (item) {
-        item.quantity += 1;
+        item.quantity += quantity;
     } else {
-        cart.push({ ...product, quantity: 1 });
+        cart.push({ ...product, quantity: quantity });
     }
     setCart(cart);
 }
+
 export function showCart(root, showHome) {
     const connectedUser = localStorage.getItem('connectedUser');
     if (!connectedUser) {
@@ -112,10 +142,16 @@ export function showCart(root, showHome) {
         input.onchange = function() {
             const idx = parseInt(this.dataset.idx);
             const qty = parseInt(this.value);
-            if (qty > 0) {
+            const item = cart[idx];
+            const product = products.find(p => p.id === item.id);
+            
+            if (qty > 0 && qty <= product.stock) {
                 cart[idx].quantity = qty;
                 setCart(cart);
                 showCart(root, showHome);
+            } else {
+                alert(`Quantité invalide ! Maximum: ${product.stock}`);
+                this.value = item.quantity;
             }
         };
     });
@@ -136,6 +172,17 @@ export function showCart(root, showHome) {
     };
 
     document.getElementById('validateCartBtn').onclick = function() {
+        // Mise à jour des stocks
+        cart.forEach(item => {
+            const productIndex = products.findIndex(p => p.id === item.id);
+            if (productIndex !== -1) {
+                products[productIndex].stock -= item.quantity;
+            }
+        });
+        
+        // Sauvegarder les nouveaux stocks
+        saveStocks();
+        
         setCart([]);
         localStorage.removeItem(`promoCode_${connectedUser}`);
         alert('Commande validée ! Merci pour votre achat.');
