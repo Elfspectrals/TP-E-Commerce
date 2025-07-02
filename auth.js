@@ -82,12 +82,12 @@ export function showRegister(root, showHome, showLogin) {
         const username = document.getElementById('registerUsername').value;
         const password = document.getElementById('registerPassword').value;
         const confirmPassword = document.getElementById('registerConfirmPassword').value;
-        
+
         if (password !== confirmPassword) {
             alert('Les mots de passe ne correspondent pas !');
             return;
         }
-        
+
         if (localStorage.getItem(username)) {
             alert('Utilisateur déjà existant !');
         } else {
