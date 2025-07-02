@@ -502,3 +502,22 @@ body.sith .product-item img {
     border: 2px solid #ff2d2d;
     box-shadow: 0 0 16px #ff2d2d55;
 }
+
+#backHomeBtn {
+    display: block;
+    margin: 24px auto 0 auto;
+    background: linear-gradient(90deg, #00eaff 0%, #ffe81f 100%);
+    color: #222;
+    font-size: 1.1em;
+    font-family: 'Orbitron', Arial, sans-serif;
+    padding: 12px 32px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px #00eaff88;
+    text-align: center;
+}
+
+#backHomeBtn:hover {
+    background: #00eaff;
+    color: #ffe81f;
+    box-shadow: 0 0 20px #00eaff, 0 0 60px #ffe81f55;
+}
