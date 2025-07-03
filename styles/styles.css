@@ -57,6 +57,7 @@ h2 {
 h3 {
     font-size: 1.3em;
     margin: 15px 0;
+    text-align: center;
 }
 
 /* Boutons */
@@ -230,6 +231,8 @@ table {
     overflow: hidden;
     box-shadow: 0 0 20px #ffe81f33;
     margin-bottom: 24px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 th, td {
@@ -267,6 +270,8 @@ tr:hover {
     margin: 20px 0;
     color: #00eaff;
     box-shadow: 0 0 10px #00eaff55;
+    text-align: center;
+    max-width: 400px;
 }
 
 #promoForm label {
@@ -411,6 +416,44 @@ body.sith .side-radio[for="side-sith"] {
     border-color: #ffe81f;
     background: #ffe81f22;
     color: #ffe81f;
+}
+
+/* Centralize the cart page content */
+#cart-root,
+#cart-content,
+#cart-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+#cart-root > h2,
+#cart-content > h2,
+#cart-wrapper > h2,
+#cart-root > h3,
+#cart-content > h3,
+#cart-wrapper > h3 {
+    text-align: center;
+    width: 100%;
+}
+
+table {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#promoForm,
+#validateCartBtn,
+#backHomeBtn {
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+}
+
+#promoForm {
+    text-align: center;
+    max-width: 400px;
 }
 
 /* Responsive */
